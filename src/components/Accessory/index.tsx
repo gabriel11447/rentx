@@ -11,7 +11,7 @@ interface Props {
   icon: React.FC<SvgProps>
 }
 
-export default function Acessory({
+export default function Accessory({
   name,
   icon: Icon,
 } : Props){
@@ -19,7 +19,6 @@ export default function Acessory({
     <Container>
       <Icon width={32} height={32} />
       <Name>{name}</Name>
-
     </Container>
   );
 }
