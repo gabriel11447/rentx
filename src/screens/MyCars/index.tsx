@@ -6,7 +6,7 @@ import { AntDesign } from '@expo/vector-icons';
 
 import BackButton from '../../components/BackButton';
 import Car from '../../components/Car';
-import Load from '../../components/Load';
+import LoadAnimation from '../../components/LoadAnimation';
 
 import CarDTO from '../../dtos/CarDTO';
 import api from '../../services/api';
@@ -80,7 +80,7 @@ export default function MyCars(){
           Conforto, segurança e praticidade.
         </Subtitle>
       </Header>
-      { loading ? <Load /> : 
+      { loading ? <LoadAnimation /> : 
         <Content>
           <Appointments>
             <AppointmentsTitle>
@@ -92,7 +92,7 @@ export default function MyCars(){
           </Appointments>
           <FlatList 
             data={cars}
-            keyExtractor={item => item.id}
+            keyExtractor={item => String(item.id)}
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) =>
               <CarWrapper>
