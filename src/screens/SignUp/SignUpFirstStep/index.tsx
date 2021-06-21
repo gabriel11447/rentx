@@ -4,6 +4,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Alert,
+  StatusBar,
 } from 'react-native';
 import * as Yup from 'yup';
 import { useNavigation } from '@react-navigation/native';
@@ -63,6 +64,11 @@ export default function SignUpFirstStep(){
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <Container>
           <Header>
+            <StatusBar
+              barStyle="dark-content"
+              backgroundColor="transparent"
+              translucent
+            />
             <BackButton onPress={handleBack} />
             <Steps>
               <Bullet active />

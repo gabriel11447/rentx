@@ -3,11 +3,12 @@ import {
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
+  StatusBar,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme } from 'styled-components';
 
-import Confirmation from '../../Confirmation';
+import api from '../../../services/api';
 
 import BackButton from '../../../components/BackButton';
 import Bullet from '../../../components/Bullet';
@@ -48,7 +49,7 @@ export default function SignUpSecondStep(){
     navigation.goBack();
   }
 
-  function handleRegister() {
+  async function handleRegister() {
     if (!password || !passwordConfirm) {
       return Alert.alert('Informe a senha e a confirmação');
     }
@@ -57,10 +58,21 @@ export default function SignUpSecondStep(){
       return Alert.alert('As senhas não são iguais');
     }
 
-    navigation.navigate('Confirmation', {
-      title: 'Conta criada!',
-      message: 'Agora é só fazer login\ne aproveitar',
-      nextScreenRoute: 'SignIn'
+    await api.post('/users', {
+      name: user.name,
+      email: user.email,
+      driver_license: user.driverLicense,
+      password,
+    })
+    .then(() => {
+      navigation.navigate('Confirmation', {
+        title: 'Conta criada!',
+        message: 'Agora é só fazer login\ne aproveitar',
+        nextScreenRoute: 'SignIn'
+      });
+    })
+    .catch(() => {
+      Alert.alert('Opa!', 'Não foi possível cadastrar.');
     });
   }
 
@@ -69,6 +81,11 @@ export default function SignUpSecondStep(){
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <Container>
           <Header>
+            <StatusBar
+              barStyle="dark-content"
+              backgroundColor="transparent"
+              translucent
+            />
             <BackButton onPress={handleBack} />
             <Steps>
               <Bullet />

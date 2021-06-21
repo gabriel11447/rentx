@@ -126,8 +126,8 @@ export default function CarDetails(){
             <Name>{car.name}</Name>
           </Description>
           <Rent>
-            <Period>{car.rent.period}</Period>
-            <Price>{`R$ ${car.rent.price}`}</Price>
+            <Period>{car.period}</Period>
+            <Price>{`R$ ${car.price}`}</Price>
           </Rent>
         </Details>
 
@@ -143,10 +143,6 @@ export default function CarDetails(){
         </Accessories>
 
         <About>
-          {car.about}
-          {car.about}
-          {car.about}
-          {car.about}
           {car.about}
         </About>
 
