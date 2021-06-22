@@ -40,8 +40,8 @@ export default function PasswordInput({
   }
 
   return (
-    <Container>
-      <IconContainer isFocused={isFocused}>
+    <Container isFocused={isFocused}>
+      <IconContainer>
         <Feather
           name={iconName}
           size={24}
@@ -53,7 +53,7 @@ export default function PasswordInput({
         secureTextEntry={isPasswordVisible}
         onFocus={handleInputFocus}
         onBlur={handleInputBlur}
-        isFocused={isFocused}
+        autoCorrect={false}
         {...rest}
       />
 
