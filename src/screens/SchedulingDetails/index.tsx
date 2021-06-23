@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Alert } from 'react-native';
+import { Alert, StatusBar } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { RFValue } from 'react-native-responsive-fontsize';
+import { useNetInfo } from '@react-native-community/netinfo';
 import { useTheme } from 'styled-components';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { format } from 'date-fns';
@@ -54,35 +55,27 @@ interface RentalPeriod {
 }
 
 export default function SchedulingDetails(){
+  const [carUpdated, setCarUpdated] = useState<CarDTO>({} as CarDTO);
   const [loading, setLoading] = useState(false);
   const [rentalPeriod, setRentalPeriod] = useState<RentalPeriod>({} as RentalPeriod);
+
+  const netInfo = useNetInfo();
   const theme = useTheme();
   const navigation = useNavigation();
   const route = useRoute();
   const { car, dates } = route.params as Params;
 
-  const rentTotal = Number(dates.length * car.rent.price);
+  const rentTotal = Number(dates.length * car.price);
 
   async function handleConfirmRental() {
     setLoading(true);
 
-    const schedulesByCar = await api.get(`/schedules_bycars/${car.id}`);
-    
-    const unavailable_dates = [
-      ...schedulesByCar.data.unavailable_dates,
-      ...dates,
-    ];
-
-    await api.post('/schedules_byuser', {
+    await api.post('/rentals', {
       user_id: 1,
-      car,
-      startDate: format(getPlatformDate(new Date(dates[0])), 'dd/MM/yyyy'),
-      endDate: format(getPlatformDate(new Date(dates[dates.length - 1])), 'dd/MM/yyyy')
-    });
-
-    api.put(`/schedules_bycars/${car.id}`, {
-      id: car.id,
-      unavailable_dates,
+      car_id: car.id,
+      start_date: new Date(dates[0]),
+      end_date: new Date(dates[dates.length - 1]),
+      total: rentTotal
     })
     .then(() => {
       navigation.navigate('Confirmation', {
@@ -91,11 +84,10 @@ export default function SchedulingDetails(){
         nextScreenRoute: 'Home'
       });
     })
-    .catch(() => {
+    .catch((error) => {
       setLoading(false);
-      Alert.alert('Não foi possível confirmar o agendamento.');
+      Alert.alert('','Não foi possível confirmar o agendamento.');
     })
-
   }
 
   function handleBack() {
@@ -109,15 +101,33 @@ export default function SchedulingDetails(){
     })
   }, []);
 
+  useEffect(() => {
+    async function fetchCarUpdated() {
+      const response = await api.get(`/cars/${car.id}`);
+      setCarUpdated(response.data);
+    }
+    if (netInfo.isConnected === true) {
+      fetchCarUpdated();
+    }
+  }, [netInfo.isConnected]);
+
   return (
     <Container>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="transparent"
+        translucent
+      />
       <Header>
         <BackButton onPress={handleBack} />
       </Header>
 
       <CarImages>
         <ImageSlider 
-          imagesUrl={car.photos}
+          imagesUrl={
+            !!carUpdated.photos ? 
+            carUpdated.photos : [{ id: car.thumbnail, photo: car.thumbnail }]
+          }
         />
       </CarImages>
 
@@ -128,23 +138,22 @@ export default function SchedulingDetails(){
             <Name>{car.name}</Name>
           </Description>
           <Rent>
-            <Period>{car.rent.period}</Period>
-            <Price>{`R$ ${car.rent.price}`}</Price>
+            <Period>{car.period}</Period>
+            <Price>{`R$ ${car.price}`}</Price>
           </Rent>
         </Details>
-
-        <Accessories>
-          {
-            car.accessories.map(accessory =>
+        {
+          carUpdated.accessories &&
+          <Accessories>
+            {carUpdated.accessories.map(accessory => 
               <Accessory
                 key={accessory.type}
                 name={accessory.name}
-                icon={getAccessoryIcon(accessory.type)}
+                icon={getAccessoryIcon(accessory.type)} 
               />
-            )
-          }
-        </Accessories>
-
+            )}
+          </Accessories>
+        }
         <RentalPeriod>
           <CalendarIcon>
             <Feather
@@ -174,7 +183,7 @@ export default function SchedulingDetails(){
         <RentalPrice>
           <RentalPriceLabel>TOTAL</RentalPriceLabel>
           <RentalPriceDetails>
-            <RentalPriceQuota>{`R$ ${car.rent.price} x${dates.length} diárias`}</RentalPriceQuota>
+            <RentalPriceQuota>{`R$ ${car.price} x${dates.length} diárias`}</RentalPriceQuota>
             <RentalPriceTotal>{`R$ ${rentTotal}`}</RentalPriceTotal>
           </RentalPriceDetails>
         </RentalPrice>
